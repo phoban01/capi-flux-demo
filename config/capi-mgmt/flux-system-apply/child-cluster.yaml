@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha3
+apiVersion: cluster.x-k8s.io/v1alpha4
 kind: Cluster
 metadata:
   name: child
@@ -7,29 +7,29 @@ spec:
   clusterNetwork:
     pods:
       cidrBlocks:
-      - 10.100.0.0/16
-    serviceDomain: child-cluster.local
+      - 192.168.0.0/16
+    serviceDomain: cluster.local
     services:
       cidrBlocks:
-      - 10.200.0.0/12
+      - 10.128.0.0/12
   controlPlaneRef:
-    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
     kind: KubeadmControlPlane
     name: child-control-plane
     namespace: flux-system
   infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
     kind: DockerCluster
     name: child
     namespace: flux-system
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: DockerCluster
 metadata:
   name: child
   namespace: flux-system
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: DockerMachineTemplate
 metadata:
   name: child-control-plane
@@ -41,17 +41,12 @@ spec:
       - containerPath: /var/run/docker.sock
         hostPath: /var/run/docker.sock
 ---
-apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
 kind: KubeadmControlPlane
 metadata:
   name: child-control-plane
   namespace: flux-system
 spec:
-  infrastructureTemplate:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-    kind: DockerMachineTemplate
-    name: child-control-plane
-    namespace: flux-system
   kubeadmConfigSpec:
     clusterConfiguration:
       apiServer:
@@ -65,16 +60,24 @@ spec:
       nodeRegistration:
         criSocket: /var/run/containerd/containerd.sock
         kubeletExtraArgs:
+          cgroup-driver: cgroupfs
           eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
     joinConfiguration:
       nodeRegistration:
         criSocket: /var/run/containerd/containerd.sock
         kubeletExtraArgs:
+          cgroup-driver: cgroupfs
           eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+      kind: DockerMachineTemplate
+      name: child-control-plane
+      namespace: flux-system
   replicas: 1
   version: 1.19.1
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: DockerMachineTemplate
 metadata:
   name: child-md-0
@@ -83,7 +86,7 @@ spec:
   template:
     spec: {}
 ---
-apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
 kind: KubeadmConfigTemplate
 metadata:
   name: child-md-0
@@ -94,9 +97,10 @@ spec:
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs:
+            cgroup-driver: cgroupfs
             eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
 ---
-apiVersion: cluster.x-k8s.io/v1alpha3
+apiVersion: cluster.x-k8s.io/v1alpha4
 kind: MachineDeployment
 metadata:
   name: child-md-0
@@ -110,13 +114,13 @@ spec:
     spec:
       bootstrap:
         configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
           kind: KubeadmConfigTemplate
           name: child-md-0
           namespace: flux-system
       clusterName: child
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
         kind: DockerMachineTemplate
         name: child-md-0
         namespace: flux-system

@@ -1,7 +1,7 @@
 clusterctl \
-  --config ~/.cluster-api/dev-repository/config.yaml \
-  config cluster child \
+  generate cluster child \
   -n flux-system \
+  --flavor development \
   --kubernetes-version 1.19.1 \
-  -i docker:v0.3.8 \
+  --infrastructure docker:v0.4.0 \
   --worker-machine-count 1 \
