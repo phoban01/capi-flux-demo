@@ -107,7 +107,7 @@ metadata:
   namespace: flux-system
 spec:
   clusterName: child
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels: null
   template:
