@@ -75,7 +75,7 @@ spec:
       name: child-control-plane
       namespace: flux-system
   replicas: 1
-  version: 1.21.1
+  version: 1.21.2
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: DockerMachineTemplate
